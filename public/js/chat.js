@@ -50,16 +50,18 @@ socket.on('updateUserList', function(users){
 })
 
 socket.on('newMessage', function (message) {
+      console.log('New Message received from SERVER', message);
     var formattedTime = moment(message.createdAt).format('h:mm a');
     var template = jQuery('#message-template').html();
     var html = Mustache.render(template,{
        from:message.from,
+      
         text:message.text,
         createdAt: formattedTime
     });
     jQuery('#messages').append(html);
     scrollToBottom();
-//  console.log('newMessage', message);
+console.log('newMessage', message);
 //  var li = jQuery('<li></li>');
 //  li.text(`${formattedTime}  ${message.from}: ${message.text}`);
 //

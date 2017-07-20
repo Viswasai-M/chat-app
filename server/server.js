@@ -3,16 +3,18 @@ const http = require('http');
 const express = require('express');
 const socketIO = require('socket.io');
 
-const {generateMessage, generateLocationMessage} = require('./utils/message');
+const {Messages, generateMessage, generateLocationMessage} = require('./utils/message');
 const {isRealString} = require('./utils/validation');
 const {Users} = require('./utils/users');
-const {mongoConnect} = require('./../mongodbConnect');
+
 const publicPath = path.join(__dirname, '../public');
 const port = process.env.PORT || 3000;
+
 var app = express();
 var server = http.createServer(app);
 var io = socketIO(server);
 var users = new Users();
+//var messages = new Messages();
 app.use(express.static(publicPath));
 
 io.on('connection', (socket) => {
@@ -24,15 +26,28 @@ io.on('connection', (socket) => {
       if(!isRealString(params.name) || !isRealString(params.room)){
           callback('name and room name are requried');
       } 
+      
+    //  var room = params.room;
+      // var name = params.name;
   
       socket.join(params.room);
   
       users.removeUser(socket.id);
       users.addUser(socket.id, params.name, params.room);
      io.to(params.room).emit('updateUserList', users.getUserList(params.room));
-   socket.emit('newMessage', generateMessage('Admin', 'Welcome to the chat app'));
-   socket.broadcast.to(params.room).emit('newMessage', generateMessage('Admin', `new user ${params.name} joined` ));  
-      
+//   socket.emit('newMessage', generateMessage('Admin', 'Welcome to the chat app'));
+//   socket.broadcast.to(params.room).emit('newMessage', generateMessage('Admin', `new user ${params.name} joined` ));  
+        
+      var msg = generateMessage(`ADMIN`,
+                      `\tHello, ${params.name}! \n\tWelcome to the ${params.room}! chat app  `);
+    var msg2 =  generateMessage('ADMIN', `${params.name} has joined`);
+    msg.then((docs)=>{
+      socket.emit('newMessage', docs);
+    });
+    msg2.then((docs)=>{
+      socket.broadcast.to(params.room).emit('newMessage', docs);
+      callback(); //no arg because we set up the first arg to be an error arg in chat.js
+    });
   callback();
       
   });
@@ -40,14 +55,20 @@ io.on('connection', (socket) => {
   socket.on('createMessage', (message, callback) => {
       var user = users.getUser(socket.id);
     //console.log(user);
-      if(user && isRealString(message.text)){
-          io.to(user.room).emit('newMessage', generateMessage(user.name, message.text));
-      }
+      if(user && isRealString(message.text)) callback();
+//      {
+//          io.to(user.room).emit('newMessage', generateMessage(user.name, message.text));
+//      }
+      var msg = generateMessage(user.name, message.text);
+    msg.then((m)=>{
+     // .pushMessage(user.room, m);
+      io.to(user.room).emit('newMessage', m);
+      
     console.log('createMessage', message);
-  //moved following to inside if loop  io.emit('newMessage', generateMessage(message.from, //message.text)) and same for create location below;
+  //moved following  io.emit('newMessage', generateMessage(message.from, //message.text)) to inside if loop and same for create location below;
     callback();
   });
-
+ });
   socket.on('createLocationMessage', (coords) => {
       
     var user = users.getUser(socket.id);

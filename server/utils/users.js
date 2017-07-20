@@ -1,3 +1,5 @@
+var {mongoose} = require('./../Mongodb/mongodbConnect');
+
 class Users{
     constructor (){
         this.users = [];
