@@ -7,16 +7,14 @@ class Messages{
   }
 }
 
-var generateMessage = function(from, text){
-//  console.log('Generating message in room', `${room}`);
-//  console.log(`FROM: ${from}
-//    TEXT: ${text}
-//    ROOM: ${room}`);
-      
+var generateMessage = function(from, room, text){
+
   var m = new ModeledMessage({
     from,
     text,
-    createdAt: new Date().getTime()
+    room,
+    createdAt: moment().valueOf()  
+   // createdAt: new Date().getTime()
   });
   return m.save().then((doc)=>{
     console.log('Message Saved in DB: ', doc);
@@ -24,6 +22,7 @@ var generateMessage = function(from, text){
     return {
       from,
       text,
+      room,
       createdAt: moment().valueOf()
     };
   

@@ -35,12 +35,13 @@ io.on('connection', (socket) => {
       users.removeUser(socket.id);
       users.addUser(socket.id, params.name, params.room);
      io.to(params.room).emit('updateUserList', users.getUserList(params.room));
-//   socket.emit('newMessage', generateMessage('Admin', 'Welcome to the chat app'));
-//   socket.broadcast.to(params.room).emit('newMessage', generateMessage('Admin', `new user ${params.name} joined` ));  
+      
+ //socket.emit('newMessage', generateMessage('Admin',  `${params.room}`,'Welcome to the chat app'));
+// socket.broadcast.to(params.room).emit('newMessage', generateMessage('Admin', `${params.room}`,`new user ${params.name} joined` ));  
         
-      var msg = generateMessage(`ADMIN`,
-                      `\tHello, ${params.name}! \n\tWelcome to the ${params.room}! chat app  `);
-    var msg2 =  generateMessage('ADMIN', `${params.name} has joined`);
+     var msg = generateMessage(`ADMIN`,`${params.room}`,
+                   `\tHello, ${params.name}! \n\tWelcome to the ${params.room}! chat app  `);
+    var msg2 =  generateMessage('ADMIN', `${params.room}`,`${params.name} has joined`);
     msg.then((docs)=>{
       socket.emit('newMessage', docs);
     });
@@ -48,7 +49,7 @@ io.on('connection', (socket) => {
       socket.broadcast.to(params.room).emit('newMessage', docs);
       callback(); //no arg because we set up the first arg to be an error arg in chat.js
     });
-  callback();
+callback();
       
   });
 
@@ -59,7 +60,7 @@ io.on('connection', (socket) => {
 //      {
 //          io.to(user.room).emit('newMessage', generateMessage(user.name, message.text));
 //      }
-      var msg = generateMessage(user.name, message.text);
+      var msg = generateMessage(user.name, user.room, message.text);
     msg.then((m)=>{
      // .pushMessage(user.room, m);
       io.to(user.room).emit('newMessage', m);
@@ -84,7 +85,13 @@ io.on('connection', (socket) => {
       
       if(user){
           io.to(user.room).emit('updateUserList', users.getUserList(user.room));
-          io.to(user.room).emit('newMessage', generateMessage('Admin' , `${user.name} has left `));
+           
+          var msg = generateMessage('Admin', `${user.room}`, `${user.name} has left`);
+          msg.then((docs)=>{
+                io.to(user.room).emit('newMessage', docs);
+              });
+          // below io.to has changed to above msg.then(()=>{ given io.to here});
+          //io.to(user.room).emit('newMessage', generateMessage('Admin' , `${user.room}`,`${user.name} has left `));
       }
     console.log('User was disconnected');
   });

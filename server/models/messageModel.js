@@ -1,15 +1,21 @@
 var mongoose = require('mongoose');
 var ModeledMessage = mongoose.model('Message', {
-  from: 'string',
+  from: {
+    type: String,
+    required: true
+  },
   text:{
     type: String,
-    required: true,
+   //required: true
+  },
+    room: {
+    type: String,
+    required: true
   },
   completedAt: {
     type: Number,
     default: new Date().getTime()
-  },
-  room: 'string'
+  }
 });
 
 module.exports = {ModeledMessage};
