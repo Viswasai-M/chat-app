@@ -29,6 +29,8 @@ var generateMessage = function(from, room, text){
   });
 };
 
+
+
 var generateLocationMessage = function(from, latitude, longitude){
   return{
     from,
